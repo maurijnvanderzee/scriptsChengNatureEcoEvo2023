@@ -1,0 +1,87 @@
+
+TIME<- c(1,4,8,11,22)
+
+####### data from shixiong
+
+#Generation	Fast A						Fast B			
+#	FF	FS	SS	AF of F			FF	FS	SS	AF of F
+#Gen. 0	3	17	4	0,479166667		Gen. 0	8	10	6	0,541666667
+#Gen. 3	16	6	2	0,791666667		Gen. 3	12	9	3	0,6875
+#Gen. 7	20	3	1	0,895833333		Gen. 7	11	12	1	0,708333333
+#Gen. 10	18	6	0	0,875		Gen. 10	19	4	1	0,875
+#Gen. 21	24	0	0	1		Gen. 21	20	4	0	0,916666667
+										
+										
+#	NS A						NS B			
+#	FF	FS	SS	AF of F			FF	FS	SS	AF of F
+#Gen. 0	6	14	4	0,541666667		Gen. 0	12	10	2	0,708333333
+#Gen. 3	11	9	4	0,645833333		Gen. 3	8	13	3	0,604166667
+#Gen. 7	11	11	2	0,6875		Gen. 7	6	10	8	0,458333333
+#Gen. 10	7	14	3	0,583333333		Gen. 10	3	11	10	0,354166667
+#Gen. 21	6	10	8	0,458333333		Gen. 21	9	13	2	0,645833333
+
+
+
+
+LLS<-c()
+LLres<- 0-100000
+
+GENOTYPESFA<-rbind(c(3,17,4),c(16,6,2),c(20,3,1),c(18,6,0),c(24,0,0)) #FA
+GENOTYPESFB<-rbind(c(8,10,6),c(12,9,3),c(11,12,1),c(19,4,1),c(20,4,0)) #FB
+GENOTYPESNSA<-rbind(c(6,14,4),c(11,9,4),c(11,11,2),c(7,14,3),c(6,10,8)) #NSA
+GENOTYPESNSB<-rbind(c(12,10,2),c(8,13,3),c(6,10,8),c(3,11,10),c(9,13,2)) #NSB
+
+
+
+
+w<- c(1,1,1)
+pst<- 0.5
+c<- c(1,0.5,0)
+
+for (Z in 1:100000){
+
+neww<- w+rnorm(3,0,0.001)
+newpst<- pst+rnorm(1,0,0.001)
+
+
+Nc<- 20000 ## number of chromosomes
+
+neww[which(neww<0)]<- 0
+if (newpst<0){newpst<- 0}
+if (newpst>1){newpst<- 1}
+neww<- neww / max(neww)
+
+genotypes<-c()
+genotypes<-rbind(genotypes,c(newpst^2, 2*newpst*(1-newpst),(1-newpst)^2))
+
+for (i in 1:21)
+{
+p<- sum(genotypes[i,]*neww*c)
+W<- sum(genotypes[i,]*neww)
+p<- p/W
+genotypes<-rbind(genotypes,c(p^2, 2*p*(1-p),(1-p)^2))
+}
+
+LL<- 0
+for (i in 1:5){
+LL<-LL+log(dmultinom(prob=genotypes[TIME[i],],x=GENOTYPES[i,]))
+}
+
+
+if (LL> LLres)
+{
+LLres<- LL
+LLS<-c(LLS,LL)
+w<- neww
+pst<- newpst
+plot(LLS,main=Z)
+}
+
+
+}
+
+
+w
+pst
+
+max(LLS)

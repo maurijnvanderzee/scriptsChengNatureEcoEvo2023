@@ -1,0 +1,164 @@
+### script for R to filter snps from vcf, determine significance using glm, determine q value based on permutated p values, by Joost van den Heuvel,
+### joost.vandenheuvel@wur.nl
+
+
+library(vcfR)
+
+
+## list the 10 chromosomes
+CHRS<- c("NC_007416.3","NC_007417.3","NC_007418.3","NC_007419.2","NC_007420.3",
+"NC_007421.3","NC_007422.5","NC_007423.3","NC_007424.3","NC_007425.3")
+
+## list the length
+chrL<- c(8676460,15265516,31381287,12290766,15459558,10086398,
+16482863,14581690,16184580,7222678)
+
+
+############# first we determined the distance to indels
+
+vcf<-read.vcfR("clean.annot.snps.31082018.vcf")
+ind<-read.vcfR("clean.annot.inds.31082018.vcf")
+
+### retrieve positions indels
+chr_ind<-ind@fix[,1]
+pos_ind<-as.numeric(ind@fix[,2])
+### retriev positions snps
+chr_vcf<-vcf@fix[,1]
+pos_vcf<-as.numeric(vcf@fix[,2])
+
+Lsnps<- length(vcf@fix[,1])
+
+for (i in 1:Lsnps)
+{
+write.table(min(abs(pos_ind[which(chr_ind==chr_vcf[i])]-pos_vcf[i])),
+file="distance_from_indel.txt", col.names=F, row.names=F, sep='\t',append=TRUE)
+}
+
+### then we continue with more variant filtering
+
+AF<-extract.gt(vcf, element='FREQ', as.numeric=TRUE)
+AF<- AF / 100
+
+DP<-extract.gt(vcf, element='DP', as.numeric=TRUE)
+
+AO<- round(AF*DP)
+RO<- round((1-AF)*DP)
+
+### calculate the number of alternative variants (==1 if biallelic)
+Nalt<-lengths(strsplit(vcf@fix[,5],","))
+### determine the minor allele frequency
+maf<- rowMeans(AF[,c(1,2,5,6)], na.rm=TRUE)
+### distance to indels
+dfi<- read.table("distance_from_indel.txt",header=F)
+
+### snps are filtered for chromosome position, distance to indel (>9), biallelic (Nalt=1) and depth ( 0.05 quantile < DP < 0.98 quantile) , 0.05  < maf < 0.95
+Wsnps<-which(vcf@fix[,1]%in%CHRS  &  dfi$V1>9 & Nalt==1 &
+DP[,1]<quantile(DP[,1],0.98,na.rm=TRUE) & DP[,1]>quantile(DP[,1],0.05,na.rm=TRUE) &  
+DP[,2]<quantile(DP[,2],0.98,na.rm=TRUE) & DP[,2]>quantile(DP[,2],0.05,na.rm=TRUE) & 
+DP[,5]<quantile(DP[,5],0.98,na.rm=TRUE) & DP[,5]>quantile(DP[,5],0.05,na.rm=TRUE) & 
+DP[,6]<quantile(DP[,6],0.98,na.rm=TRUE) & DP[,6]>quantile(DP[,6],0.05,na.rm=TRUE) &
+is.na(DP[,1])==FALSE & is.na(DP[,2])==FALSE & is.na(DP[,5])==FALSE & is.na(DP[,6])==FALSE &
+maf>0.05 & maf<0.95)
+
+##################################
+##################################
+
+### then for these snps we run a glm, also adding two randomized value (to get permutated p values)
+for (j in 1:length(Wsnps))
+{
+i<- Wsnps[j]
+
+P<-c()
+
+M<- glm(cbind(AO[i,c(1,2,5,6)],RO[i,c(1,2,5,6)]) ~  c("C","C","S","S"),family='binomial')
+P<- c(P,anova(M,test="Chi")[[5]][[2]])
+
+M<- glm(cbind(AO[i,c(1,2,5,6)],RO[i,c(1,2,5,6)]) ~  c("C","S","C","S"),family='binomial')
+P<- c(P,anova(M,test="Chi")[[5]][[2]])
+
+M<- glm(cbind(AO[i,c(1,2,5,6)],RO[i,c(1,2,5,6)]) ~  c("S","C","C","S"),family='binomial')
+P<- c(P,anova(M,test="Chi")[[5]][[2]])
+
+write.table(t(c(vcf@fix[Wsnps[i],c(1,2,4,5)],P)), 
+file="pvals.FvsC.txt", col.names=FALSE,
+row.names=FALSE, quote=FALSE, sep='\t',append=TRUE)
+
+}
+
+
+########### similarly we do this for Slow versus control
+
+
+### determine the minor allele frequency
+maf<- rowMeans(AF[,c(3,4,5,6)], na.rm=TRUE)
+
+
+### snps are filtered for chromosome position, distance to indel (>9), biallelic (Nalt=1) and depth ( 0.05 quantile < DP < 0.98 quantile) , 0.05  < maf < 0.95
+Wsnps<-which(vcf@fix[,1]%in%CHRS  &  dfi$V1>9 & Nalt==1 &
+DP[,3]<quantile(DP[,3],0.98,na.rm=TRUE) & DP[,3]>quantile(DP[,3],0.05,na.rm=TRUE) &  
+DP[,4]<quantile(DP[,4],0.98,na.rm=TRUE) & DP[,4]>quantile(DP[,4],0.05,na.rm=TRUE) & 
+DP[,5]<quantile(DP[,5],0.98,na.rm=TRUE) & DP[,5]>quantile(DP[,5],0.05,na.rm=TRUE) & 
+DP[,6]<quantile(DP[,6],0.98,na.rm=TRUE) & DP[,6]>quantile(DP[,6],0.05,na.rm=TRUE) &
+is.na(DP[,3])==FALSE & is.na(DP[,4])==FALSE & is.na(DP[,5])==FALSE & is.na(DP[,6])==FALSE &
+maf>0.05 & maf<0.95)
+
+##################################
+##################################
+
+### then for these snps we run a glm, also adding two randomized value (to get permutated p values)
+for (j in 1:length(Wsnps))
+{
+i<- Wsnps[j]
+
+P<-c()
+
+M<- glm(cbind(AO[i,c(3,4,5,6)],RO[i,c(3,4,5,6)]) ~  c("C","C","S","S"),family='binomial')
+P<- c(P,anova(M,test="Chi")[[5]][[2]])
+
+M<- glm(cbind(AO[i,c(3,4,5,6)],RO[i,c(3,4,5,6)]) ~  c("C","S","C","S"),family='binomial')
+P<- c(P,anova(M,test="Chi")[[5]][[2]])
+
+M<- glm(cbind(AO[i,c(3,4,5,6)],RO[i,c(3,4,5,6)]) ~  c("S","C","C","S"),family='binomial')
+P<- c(P,anova(M,test="Chi")[[5]][[2]])
+
+write.table(t(c(vcf@fix[Wsnps[i],c(1,2,4,5)],P)), 
+file="pvals.SvsC.txt", col.names=FALSE,
+row.names=FALSE, quote=FALSE, sep='\t',append=TRUE)
+
+}
+
+########################################
+##########################################
+
+library(qvalue)
+
+### to determine the q values we read in the p values and randomized p values
+
+Pfast<- read.table("pvals.FvsC.txt",header=F)
+
+real<- Pfast[,5]
+ran1<- Pfast[,6]
+ran2<- Pfast[,7]
+
+permPvals<-empPvals(real,c(ran1,ran2),pool=TRUE)
+permPvals<-1-permPvals
+
+qvalues<-qvalue(permPvals)$qvalue
+
+log_pvalue_fdr0.05_fast<-max(log(real[which(qvalues<0.05)]))
+
+#########
+
+Pslow<- read.table("pvals.SvsC.txt",header=F)
+
+real<- Pslow[,5]
+ran1<- Pslow[,6]
+ran2<- Pslow[,7]
+
+permPvals<-empPvals(real,c(ran1,ran2),pool=TRUE)
+permPvals<-1-permPvals
+
+qvalues<-qvalue(permPvals)$qvalue
+
+log_pvalue_fdr0.05_slow<-max(log(real[which(qvalues<0.05)]))
+

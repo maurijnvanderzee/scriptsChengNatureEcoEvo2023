@@ -1,0 +1,200 @@
+### upstream analysis pipeline tribolium resequencing NEE, written by Joost van den Heuvel, joost.vandenheuvel@wur.nl
+
+#####  ####   #  #   #  #   #
+  #    #  #   #  ## ##  ## ##
+  #    ###    #  # # #  # # #
+  #    # #    #  #   #  #   #
+  #    #  #   #  #   #  #   #
+
+######### first raw data is trimmed using trimmomatic
+
+java -jar ~/bin/nobackup/trimmomatic.jar PE -phred33 \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-001_GAACGGTT_L006_R1.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-001_GAACGGTT_L006_R2.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/1_R1.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/1_R1.up.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/1_R2.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/1_R2.up.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:70 
+
+java -jar ~/bin/nobackup/trimmomatic.jar PE -phred33 \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-002_CCAGTTGA_L006_R1.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-002_CCAGTTGA_L006_R2.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/2_R1.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/2_R1.up.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/2_R2.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/2_R2.up.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:70 
+
+java -jar ~/bin/nobackup/trimmomatic.jar PE -phred33 \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-003_GTCATCGT_L006_R1.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-003_GTCATCGT_L006_R2.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/3_R1.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/3_R1.up.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/3_R2.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/3_R2.up.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:70 
+
+java -jar ~/bin/nobackup/trimmomatic.jar PE -phred33 \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-004_CAATGCGA_L006_R1.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-004_CAATGCGA_L006_R2.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/4_R1.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/4_R1.up.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/4_R2.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/4_R2.up.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:70 
+
+java -jar ~/bin/nobackup/trimmomatic.jar PE -phred33 \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-005_GGTTGAAC_L006_R1.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-005_GGTTGAAC_L006_R2.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/5_R1.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/5_R1.up.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/5_R2.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/5_R2.up.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:70 
+
+java -jar ~/bin/nobackup/trimmomatic.jar PE -phred33 \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-006_CTTCGGTT_L006_R1.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/rawdat/HV5NJBBXX_103273-001-006_CTTCGGTT_L006_R2.fastq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/6_R1.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/6_R1.up.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/6_R2.fq.gz \
+/mnt/nexenta/heuve063/Tribolium/trimmed_fq/6_R2.up.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:70 
+
+##################################################################
+##################################################################
+
+###    # # #  ####
+#  #   # # #  #  #
+###    # # #  ####
+#  #   # # #  #  #
+###     ###   #  #
+
+
+##mappping is done using bwa
+
+
+~/bin/nobackup/bwa-0.7.15/bwa index /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna
+
+~/bin/nobackup/bwa-0.7.15/bwa mem -t 20 /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna /mnt/nexenta/heuve063/Tribolium/trimmed_fq/1_R1.fq.gz /mnt/nexenta/heuve063/Tribolium/trimmed_fq/1_R2.fq.gz > /mnt/nexenta/heuve063/Tribolium/mapping_sam/1.sam
+~/bin/nobackup/bwa-0.7.15/bwa mem -t 20 /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna /mnt/nexenta/heuve063/Tribolium/trimmed_fq/2_R1.fq.gz /mnt/nexenta/heuve063/Tribolium/trimmed_fq/2_R2.fq.gz > /mnt/nexenta/heuve063/Tribolium/mapping_sam/2.sam
+~/bin/nobackup/bwa-0.7.15/bwa mem -t 20 /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna /mnt/nexenta/heuve063/Tribolium/trimmed_fq/3_R1.fq.gz /mnt/nexenta/heuve063/Tribolium/trimmed_fq/3_R2.fq.gz > /mnt/nexenta/heuve063/Tribolium/mapping_sam/3.sam
+~/bin/nobackup/bwa-0.7.15/bwa mem -t 20 /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna /mnt/nexenta/heuve063/Tribolium/trimmed_fq/4_R1.fq.gz /mnt/nexenta/heuve063/Tribolium/trimmed_fq/4_R2.fq.gz > /mnt/nexenta/heuve063/Tribolium/mapping_sam/4.sam
+~/bin/nobackup/bwa-0.7.15/bwa mem -t 20 /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna /mnt/nexenta/heuve063/Tribolium/trimmed_fq/5_R1.fq.gz /mnt/nexenta/heuve063/Tribolium/trimmed_fq/5_R2.fq.gz > /mnt/nexenta/heuve063/Tribolium/mapping_sam/5.sam
+~/bin/nobackup/bwa-0.7.15/bwa mem -t 20 /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna /mnt/nexenta/heuve063/Tribolium/trimmed_fq/6_R1.fq.gz /mnt/nexenta/heuve063/Tribolium/trimmed_fq/6_R2.fq.gz > /mnt/nexenta/heuve063/Tribolium/mapping_sam/6.sam
+
+ ####    ######  #     #  #######    #####     #####   #        ####
+#    #   #    #  ##   ##     #      #     #   #     #  #       #    #
+#        #    #  # # # #     #      #     #   #     #  #       #
+ ####    ######  #  #  #     #      #     #   #     #  #        ####
+     #   #    #  #     #     #      #     #   #     #  #            #
+#    #   #    #  #     #     #      #     #   #     #  #       #    #
+ ####    #    #  #     #     #       #####     #####   ######   ####
+
+
+#### we make a sam 2 bam conversion, also filter the bam in -q 20, and sort
+
+for file in 1 2 3 4 5 6
+do
+samtools view -Sb  /mnt/nexenta/heuve063/Tribolium/mapping_sam/$file.sam -o /mnt/nexenta/heuve063/Tribolium/mapping_bam/$file.bam
+done 
+
+for file in 1 2 3 4 5 6
+do
+samtools view -bq 20 /mnt/nexenta/heuve063/Tribolium/mapping_bam/$file.bam -o /mnt/nexenta/heuve063/Tribolium/mapping_bam_filt/$file.fil.bam
+samtools sort /mnt/nexenta/heuve063/Tribolium/mapping_bam_filt/$file.fil.bam /mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$file.fil.sort
+done 
+
+##############################
+##############################
+
+  ####  ##### ##### #  #    #        ####   #  ###  #####  ####   ####
+ #      #   #   #   # #      #       #   #  # #     #   #  #   #  #   #
+ #   #  #####   #   ##        #      ####   # #     #####  ####   #   #
+ #    # #   #   #   # #        #     #      # #     #   #  # #    #   #
+  ####  #   #   #   #  #        #    #      #  ###  #   #  #  #   ####
+
+
+############################## clean up bam file using gatk picard tools
+
+samtools faidx /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna
+
+
+java -Xmx5g -Dsnappy.disable=true -jar ~/bin/nobackup/picard-2.8.2.jar CreateSequenceDictionary \
+R=/mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna \
+O=/mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna.dict
+
+### mark and remove duplicates
+
+for pop in 1 2 3 4 5 6
+do
+
+java -Xmx20g -Dsnappy.disable=true -jar ~/bin/nobackup/picard-2.8.2.jar MarkDuplicates \
+REMOVE_DUPLICATES=true \
+I=/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.bam \
+O=/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.bam \
+M=/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.txt \
+VALIDATION_STRINGENCY=SILENT
+
+java -Xmx5g -Dsnappy.disable=true -jar ~/bin/nobackup/picard-2.8.2.jar AddOrReplaceReadGroups \
+I=/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.bam \
+O=/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.rg.bam \
+SORT_ORDER=coordinate \
+RGID=0R1 \
+RGLB=library \
+RGPL=illumina \
+RGSM=sample \
+RGPU=name \
+CREATE_INDEX=true \
+VALIDATION_STRINGENCY=SILENT
+
+java -jar ~/bin/nobackup/GenomeAnalysisTK.jar \
+-T RealignerTargetCreator \
+-R /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna \
+-I /mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.rg.bam \
+-o /mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.rg.list
+
+java -jar ~/bin/nobackup/GenomeAnalysisTK.jar \
+-T IndelRealigner \
+-R /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna   \
+-I /mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.rg.bam \
+-targetIntervals /mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.rg.list \
+-o /mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/$pop.fil.sort.nodup.rg.realign.bam
+
+
+done
+
+#   #   ####   #  #     ####  #   # ####
+## ##   #   #  #  #     #     #   # #   #
+# # #   ####   #  #     ###   #   # ####
+#   #   #      #  #     #     #   # #
+#   #   #      #  ####  ####   ###  #
+
+samtools mpileup -Bf /mnt/nexenta/heuve063/Tribolium/genome/GCF_000002335.3_Tcas5.2_genomic.fna \
+/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/1.fil.sort.nodup.rg.realign.bam \
+/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/2.fil.sort.nodup.rg.realign.bam \
+/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/3.fil.sort.nodup.rg.realign.bam \
+/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/4.fil.sort.nodup.rg.realign.bam \
+/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/5.fil.sort.nodup.rg.realign.bam \
+/mnt/nexenta/heuve063/Tribolium/mapping_filt_sort/6.fil.sort.nodup.rg.realign.bam > /mnt/nexenta/heuve063/Tribolium/mpileup/clean.mpileup
+
+
+#   #  #####  ####     ###   ###  #####  #   #
+#   #  #   #  #   #   #     #     #   #  ##  #
+#   #  #####  ####    ####  #     #####  # # #
+ # #   #   #  #  #       #  #     #   #  #  ##
+  #    #   #  #   #   ###    ###  #   #  #   #
+
+java -jar ~/bin/nobackup/varscan/VarScan.v2.3.9.jar mpileup2snp /mnt/nexenta/heuve063/Tribolium/mpileup/clean.mpileup --output-vcf 1 --min-var-freq 0.05 > /mnt/nexenta/heuve063/Tribolium/vcfs/clean.snps.31082018.header.vcf
+
+java -jar ~/bin/nobackup/varscan/VarScan.v2.3.9.jar mpileup2indel /mnt/nexenta/heuve063/Tribolium/mpileup/clean.mpileup --output-vcf 1 --min-var-freq 0.05 > /mnt/nexenta/heuve063/Tribolium/vcfs/clean.indels.31082018.header.vcf
+
+
+ ###   #   #  ####   #####  #####  #####
+#      ##  #  #   #  #      #      #
+ ###   # # #  ####   ###    ###    ###
+    #  #  ##  #      #      #      #
+ ###   #   #  #      #####  #      #
+
+
+java -Xmx4g -jar /mnt/nexenta/heuve063/programs/snpEff/snpEff.jar Tcas5.2 /mnt/nexenta/heuve063/Tribolium/vcfs/clean.indels.31082018.header.vcf > /mnt/nexenta/heuve063/Tribolium/clean.annot.indels.31082018.vcf 
+java -Xmx4g -jar /mnt/nexenta/heuve063/programs/snpEff/snpEff.jar Tcas5.2 /mnt/nexenta/heuve063/Tribolium/vcfs/clean.snps.31082018.header.vcf > /mnt/nexenta/heuve063/Tribolium/clean.annot.snps.31082018.vcf 
+
+
+
+ 

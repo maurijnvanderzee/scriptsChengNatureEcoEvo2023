@@ -1,0 +1,75 @@
+
+
+#### first part of the script is bash
+
+for lib in HV5NJBBXX_103273-001-001_GAACGGTT_L006_R1.fastq.gz HV5NJBBXX_103273-001-001_GAACGGTT_L006_R2.fastq.gz HV5NJBBXX_103273-001-002_CCAGTTGA_L006_R1.fastq.gz HV5NJBBXX_103273-001-002_CCAGTTGA_L006_R2.fastq.gz HV5NJBBXX_103273-001-003_GTCATCGT_L006_R1.fastq.gz HV5NJBBXX_103273-001-003_GTCATCGT_L006_R2.fastq.gz HV5NJBBXX_103273-001-004_CAATGCGA_L006_R1.fastq.gz HV5NJBBXX_103273-001-004_CAATGCGA_L006_R2.fastq.gz HV5NJBBXX_103273-001-005_GGTTGAAC_L006_R1.fastq.gz HV5NJBBXX_103273-001-005_GGTTGAAC_L006_R2.fastq.gz HV5NJBBXX_103273-001-006_CTTCGGTT_L006_R1.fastq.gz HV5NJBBXX_103273-001-006_CTTCGGTT_L006_R2.fastq.gz
+do
+echo $lib >> sequences1.txt
+for seq in GGGAAGGATAAAAAAATTGAAATAATGAATTTAAAAAAATT GGGAAGGATAAAAAATTTGAAATAATAAATTTAAAAAAATT AATTTTTTTAAATTCATTATTTCAATTTTTTTATCCTTCCC AATTTTTTTAAATTTATTATTTCAAATTTTTTATCCTTCCC
+do
+echo $seq >> sequences1.txt
+zcat $lib | grep -B 1 $seq >> sequences1.txt
+done
+done
+
+##### end bash
+
+### from here on data was further processed in R
+
+###### in R
+
+dat1<- read.delim("sequences1.txt",header=F)
+
+line<- 1
+
+### read_positions
+
+reads_names<-which(substring(dat1$V1,1,1)=="@")
+
+outdat<-c()
+for (i in 1:639)
+{
+if (substring(dat1$V1[i],1,1)=="H"){
+fastqfile<-dat1$V1[i]}
+
+if (substring(dat1$V1[i],1,1) %in% c("A","T","C","G"))
+{
+if (nchar(as.character(dat1$V1[i]))<50)
+{
+search_pattern<- dat1$V1[i]
+}
+}
+if (substring(dat1$V1[i],1,1)=="@")
+{
+outdat<- rbind(outdat,t(c(as.character(fastqfile), as.character(search_pattern), as.character(dat1$V1[i]), as.character(dat1$V1[i+1]))))
+}
+
+}
+ 
+table(outdat[,1],outdat[,2])
+
+write.table(outdat, file="reads found by search pattern from sequences 1.txt",
+col.names=FALSE, row.names=FALSE,quote=FALSE, sep='\t') 
+
+table(outdat[,3])
+
+
+NAM<-names(which(table(substring(outdat[,3], 1, nchar(as.character(outdat[,3]))-15))>1))
+
+dim(outdat)
+
+for (i in 1:length(NAM))
+{
+S<-which(substring(outdat[,3],1,nchar(NAM[i]))==NAM[i])
+outdat<-outdat[setdiff(c(1:length(outdat[,1])),S[1]),]
+}
+
+dim(outdat)
+
+newout<- cbind(outdat[,1],outdat[,2],outdat[,4])
+### remove those that have similar sequences
+cleanout<-unique(newout)
+
+table(substring(cleanout[,1],1,25),cleanout[,2])
+
+##################### end R
